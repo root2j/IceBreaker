@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+backup/
 
 # Environment variables
 .env
@@ -11,5 +12,5 @@ yarn-debug.log*
 yarn-error.log*
 
 # Backup files (as requested by user)
-# index.html
-# get_api_key.js
+index.html
+get_api_key.js
