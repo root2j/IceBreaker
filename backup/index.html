@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ice Breaker</title>
+    <script src="api_key.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-brown: #5C4033;
+            --light-brown: #8B5A2B;
+            --cream: #F5F5F0;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--cream);
+            color: var(--primary-brown);
+        }
+        
+        .title-font {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-brown);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--light-brown);
+            transform: translateY(-2px);
+        }
+        
+        .question-card {
+            min-height: 200px;
+            transition: all 0.4s ease-out;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235C4033' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
+            background-size: 1em;
+            padding-right: 2rem !important; /* Increased padding to prevent text overflow */
+            height: auto !important; /* Adjust height to content */
+            width: 100% !important; /* Full width on mobile */
+        }
+
+        @media (max-width: 768px) { /* Media query for smartphones */
+            select {
+                width: calc(100% - 20px) !important; /* Further adjust width for mobile */
+                margin-right: 10px !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <header class="py-8 px-4 text-center">
+        <h1 class="title-font text-4xl md:text-5xl font-bold mb-2">Ice Breaker</h1>
+        <p class="text-lg opacity-80">Spark meaningful conversations</p>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 max-w-3xl">
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 question-card flex items-center justify-center fade-in">
+            <p id="question-text" class="text-2xl md:text-3xl text-center font-medium">Select your Audience and click the button below to start...</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-4 justify-center">
+            <div class="w-full md:w-auto">
+                <label for="audience-filter" class="block text-sm font-medium mb-1">Filter by audience</label>
+                <select id="audience-filter" class="w-full px-4 py-3 border border-brown-300 rounded-lg focus:ring-2 focus:ring-brown-200 focus:border-brown-500 bg-white text-brown-900">
+                    <option value="all">All Audiences</option>
+                    <option value="friends">Friends</option>
+                    <option value="family">Family</option>
+                    <option value="workplace">Workplace</option>
+                    <option value="romantic">Romantic</option>
+                    <option value="strangers">Strangers</option>
+                </select>
+            </div>
+            
+            <button id="new-question-btn" class="btn-primary px-8 py-3 rounded-lg font-medium text-lg mt-auto">
+                New Question
+            </button>
+        </div>
+    </main>
+
+    <footer class="py-6 text-center text-sm opacity-70">
+        <p>Need a conversation starter? We've got you covered.</p>
+    </footer>
+
+    <script>
+        // Internal question bank (fallback)
+        const questionBank = {
+            all: [
+                "If you could have dinner with any historical figure, who would it be and why?",
+                "What's something you're secretly proud of but never get to talk about?",
+                "If you could instantly master any skill, what would it be?",
+                "What's the most unexpected thing you've ever learned?",
+                "If you could live in any fictional universe, which would you choose?"
+            ],
+            friends: [
+                "What's our most memorable adventure together?",
+                "If we could take a trip anywhere right now, where would you want to go?",
+                "What's something you've always wanted to try but haven't had the chance to?",
+                "What's your favorite memory of our friendship?",
+                "If we were characters in a TV show, what would our dynamic be?"
+            ],
+            family: [
+                "What's a family tradition you'd love to start or bring back?",
+                "What's something you learned from your grandparents?",
+                "If our family had a motto, what would it be?",
+                "What's your favorite childhood memory with the family?",
+                "What's something you appreciate about our family that others might not notice?"
+            ],
+            workplace: [
+                "What's one thing that would make our workplace more enjoyable?",
+                "If you could swap jobs with anyone in the company for a day, who would it be?",
+                "What's a professional skill you're currently working on improving?",
+                "What's the best career advice you've ever received?",
+                "If our team had a theme song, what would it be?"
+            ],
+            romantic: [
+                "What's your idea of a perfect day together?",
+                "What's something small I do that makes you happy?",
+                "If we could teleport anywhere for a date right now, where would you choose?",
+                "What's your favorite thing about our relationship?",
+                "What's a dream you've always had but never shared with me?"
+            ],
+            strangers: [
+                "What's something interesting you've learned recently?",
+                "If you could give everyone you meet one piece of advice, what would it be?",
+                "What's something that always makes you smile?",
+                "What's the most beautiful place you've ever been?",
+                "What's a skill or talent you have that might surprise people?"
+            ]
+        };
+
+        // DOM elements
+        const questionText = document.getElementById('question-text');
+        const newQuestionBtn = document.getElementById('new-question-btn');
+        const audienceFilter = document.getElementById('audience-filter');
+
+        // Current state
+        let currentAudience = 'all';
+        let isLoading = false;
+        let askedQuestions = []; // Initialize question history
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set up event listeners
+            newQuestionBtn.addEventListener('click', fetchQuestion);
+        });
+
+        // Main function to get a question
+        async function fetchQuestion() {
+            if (isLoading) return;
+            
+            isLoading = true;
+            newQuestionBtn.disabled = true;
+            
+            // Show loading state
+            questionText.textContent = "Thinking of a good question...";
+            questionText.classList.remove('fade-in');
+            void questionText.offsetWidth; // Trigger reflow
+            questionText.classList.add('fade-in');
+            
+            try {
+                // Try to get question from API first
+                const question = await getQuestionFromAPI(currentAudience);
+                displayQuestion(question);
+            } catch (error) {
+                console.log("API failed, using fallback:", error);
+                // Fallback to internal question bank
+                const question = getQuestionFromBank(currentAudience);
+                displayQuestion(question);
+            } finally {
+                isLoading = false;
+                newQuestionBtn.disabled = false;
+            }
+        }
+
+        // Function to get question from API (Gemini API)
+        async function getQuestionFromAPI(audience) {
+            const apiKey = GEMINI_API_KEY; // Access API key from global variable
+            if (!apiKey) {
+                throw new Error("GEMINI_API_KEY is not set in api_key.js file.");
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`; // Replace with actual Gemini API endpoint
+
+            const prompt = {
+                contents: [{ 
+                    parts: [{
+                        text: `I want you to act as an icebreaker question generator that produces unique prompts. 
+Your input will include an audience category (e.g., Friends, Family, Workplace) and a list of previously asked questions. 
+For each request, generate one concise, creative, and engaging question appropriate for the specified audience. 
+Ensure the generated question has not appeared in the provided list of prior questions. 
+Respond with exactly one sentence containing only the question, without any additional explanation or formatting. 
+Your questions should draw inspiration from inclusive and thought-provoking topics to spark meaningful conversation.
+Avoid repeating content by referencing a wide range of question styles, such as scenario prompts, personal preferences, and hypothetical challenges. 
+Maintain sensitivity and suitability for the chosen audience, ensuring no potentially uncomfortable or overly personal topics are included. 
+Example output: "What's one skill you've always wanted to learn that would totally surprise your friends?"
+Begin your role now, using the audience category: ${audience}, and considering these previously asked questions: ${askedQuestions.join(", ")}.`
+                    }]
+                }]
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(prompt)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                // Extract question from API response (adjust based on actual API response structure)
+                const question = data.candidates[0].content.parts[0].text;
+                askedQuestions.push(question); // Store asked question
+                return question;
+
+            } catch (error) {
+                console.error("Error fetching question from Gemini API:", error);
+                throw error; // Re-throw error to be caught in fetchQuestion function
+            }
+        }
+
+        // Function to get question from internal bank
+        function getQuestionFromBank(audience) {
+            const questions = questionBank[audience] || questionBank.all;
+            const randomIndex = Math.floor(Math.random() * questions.length);
+            return questions[randomIndex];
+        }
+
+        // Display the question with animation
+        function displayQuestion(question) {
+            questionText.textContent = question;
+            questionText.classList.remove('fade-in');
+            void questionText.offsetWidth; // Trigger reflow
+            questionText.classList.add('fade-in');
+        }
+    </script>
+</body>
+</html>
